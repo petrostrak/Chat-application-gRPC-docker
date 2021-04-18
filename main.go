@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"log"
+	"net"
 	"os"
 	"sync"
 
 	"github.com/petrostrak/Chat-application-gRPC-docker/proto"
+	"google.golang.org/grpc"
 	glog "google.golang.org/grpc/grpclog"
 )
 
@@ -72,5 +75,17 @@ func (s *Server) BroadcastMessage(ctx context.Context, msg *proto.Message) (*pro
 }
 
 func main() {
+	var connections []*Connection
+	server := &Server{connections}
 
+	grpcServer := grpc.NewServer()
+	listener, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		log.Fatalf("error creating the server %v", err)
+	}
+
+	grpcLog.Info("Starting server at port :8080")
+
+	proto.RegisterBroadcastServer(grpcServer, server)
+	grpcServer.Serve(listener)
 }
